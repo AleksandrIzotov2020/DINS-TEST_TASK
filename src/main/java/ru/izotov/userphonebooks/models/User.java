@@ -2,10 +2,6 @@ package ru.izotov.userphonebooks.models;
 
 import ru.izotov.userphonebooks.entities.UserEntity;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 public class User {
 
     public User() {
@@ -17,7 +13,7 @@ public class User {
     public static User toModel(UserEntity userEntity){
         User user = new User();
         user.setId(userEntity.getId());
-        user.setUsername(userEntity.getUsername());
+        user.setUsername(userEntity.getUserName());
         return user;
     }
 

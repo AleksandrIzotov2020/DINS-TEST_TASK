@@ -3,11 +3,12 @@ package ru.izotov.userphonebooks.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.izotov.userphonebooks.entities.UserEntity;
-import ru.izotov.userphonebooks.exceptions.field.*;
+import ru.izotov.userphonebooks.exceptions.UserInteractionException;
 import ru.izotov.userphonebooks.models.User;
 import ru.izotov.userphonebooks.repositories.UserRepo;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -26,71 +27,69 @@ public class UserService {
 
     public List<User> containsUsername(String username){
         return userRepo
-                .findByUsernameContaining(username)
+                .findByUserNameContaining(username)
                 .stream()
                 .map(User::toModel)
                 .collect(Collectors.toList());
     }
 
-    public User registration(UserEntity user) throws CheckingFieldsException {
+    public boolean createUser(UserEntity user) throws UserInteractionException {
+
+        if(userRepo.findByUserName(user.getUserName()) != null){
+            return  false;
+        }
+
         // Проверка имени пользователя на соответствие
-        checkingUsername(user.getUsername());
+        Optional<String> userName = Optional.ofNullable(user.getUserName());
+        if(userName
+                .orElseThrow(()->new UserInteractionException(String.format("%s - required", "Username")))
+                .isEmpty()
+        ){throw new UserInteractionException("Username cannot be empty");}
 
         //Проверка пароля на соответствие
-        checkingPassword(user.getPassword());
+        Optional<String> password = Optional.ofNullable(user.getPassword());
+        if(password
+                .orElseThrow(()->new UserInteractionException(String.format("%s - required", "Password")))
+                .length() < 4
+        ){throw new UserInteractionException("Password must be more than 4 characters long");}
 
-        return User.toModel(userRepo.save(user));
+        userRepo.save(user);
+        return true;
     }
 
-    public User findById(Long id) throws CheckingFieldsException {
+    public User findById(Long id) throws UserInteractionException {
         return User.toModel(userRepo.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id %d not found", id))));
+                .orElseThrow(() -> new UserInteractionException(String.format("User with id %d not found", id))));
     }
 
-    public User editUser(UserEntity userEntity, Long id) throws CheckingFieldsException{
-        UserEntity user = userRepo.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id %d not found", id)));
-
+    public boolean editUser(UserEntity userEntity, Long id) throws UserInteractionException{
+        Optional<UserEntity> oU;
+        if(!(oU = userRepo.findById(id))
+                .isPresent()){
+            return false;
+        }
+        UserEntity dbUser = oU.get();
         //Проверки на соответствие имени и пароля
-        checkingUsername(userEntity.getUsername());
-        checkingPassword(userEntity.getPassword());
+        if(Optional.ofNullable(dbUser.getUserName())
+                .orElseThrow(()->new UserInteractionException(String.format("%s - required", "Username")))
+                .isEmpty()
+        ){throw new UserInteractionException("Username cannot be empty");}
 
-        user.setUsername(userEntity.getUsername());
-        user.setPassword(userEntity.getPassword());
-        user.getPhoneNumberEntities().setUsername(userEntity.getUsername());
-        return User.toModel(userRepo.save(user));
+        if(Optional.ofNullable(dbUser.getPassword())
+                .orElseThrow(()->new UserInteractionException(String.format("%s - required", "Password")))
+                .length() < 4
+        ){throw new UserInteractionException("Password must be more than 4 characters long");}
+
+        userEntity.setBookEntryEntity(dbUser.getBookEntryEntity());
+        userEntity.setBookEntities(dbUser.getBookEntities());
+        userEntity.setId(dbUser.getId());
+        userRepo.save(userEntity);
+        return true;
     }
 
-    public Long delete(Long id) throws CheckingFieldsException {
-        if(userRepo.findById(id).isPresent()){
-            userRepo.deleteById(id);
-        }else{
-            throw new UserNotFoundException(String.format("User with id %d not found", id));
-        }
+    public Long delete(Long id) throws UserInteractionException {
+        userRepo.findById(id).orElseThrow(()->new UserInteractionException(String.format("User with id %d not found", id)));
+        userRepo.deleteById(id);
         return id;
-    }
-
-    private void checkingUsername(String username) throws CheckingFieldsException {
-        if(username == null){
-            throw new NotNullException(String.format("%s - required", "Username"));
-        }
-
-        if(username.isEmpty()){
-            throw new FieldCannotBeEmptyException("Username cannot be empty");
-        }
-
-        if(userRepo.findByUsername(username).isPresent()){
-            throw new FieldAlreadyExistException(String.format("A user named %s already exists", username));
-        }
-    }
-
-    private void checkingPassword(String password) throws CheckingFieldsException {
-        if(password == null){
-            throw new NotNullException(String.format("%s - required", "Password"));
-        }
-
-        if(password.length() < 4){
-            throw new FieldCannotBeEmptyException("Password must be more than 4 characters long");
-        }
     }
 }

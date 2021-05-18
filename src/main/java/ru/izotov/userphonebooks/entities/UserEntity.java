@@ -13,13 +13,13 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String username;
+    private String userName;
     private String password;
 
     @OneToOne(cascade =  CascadeType.ALL, mappedBy = "user") // При удлении пользователя cascade удаляет все его записи в телефонной книге
-    private PhoneNumberEntity phoneNumberEntities;
+    private BookEntryEntity bookEntryEntity;
 
-    @OneToMany(cascade =  CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade =  CascadeType.ALL, mappedBy = "owner")
     private List<PhoneBookEntity> bookEntities;
 
     public List<PhoneBookEntity> getBookEntities() {
@@ -30,12 +30,12 @@ public class UserEntity {
         this.bookEntities = bookEntities;
     }
 
-    public PhoneNumberEntity getPhoneNumberEntities() {
-        return phoneNumberEntities;
+    public BookEntryEntity getBookEntryEntity() {
+        return bookEntryEntity;
     }
 
-    public void setPhoneNumberEntities(PhoneNumberEntity phoneNumberEntities) {
-        this.phoneNumberEntities = phoneNumberEntities;
+    public void setBookEntryEntity(BookEntryEntity bookEntryEntity) {
+        this.bookEntryEntity = bookEntryEntity;
     }
 
     public Long getId() {
@@ -46,12 +46,12 @@ public class UserEntity {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getPassword() {

@@ -2,16 +2,18 @@ package ru.izotov.userphonebooks.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.izotov.userphonebooks.entities.BookEntryEntity;
 import ru.izotov.userphonebooks.entities.PhoneBookEntity;
 import ru.izotov.userphonebooks.entities.UserEntity;
-import ru.izotov.userphonebooks.exceptions.phonebook.NoEntriesFoundException;
-import ru.izotov.userphonebooks.exceptions.field.UserNotFoundException;
+import ru.izotov.userphonebooks.exceptions.UserInteractionException;
 import ru.izotov.userphonebooks.models.PhoneBook;
+import ru.izotov.userphonebooks.models.BookEntry;
 import ru.izotov.userphonebooks.repositories.PhoneBookRepo;
-import ru.izotov.userphonebooks.repositories.PhoneNumberRepo;
+import ru.izotov.userphonebooks.repositories.BookEntryRepo;
 import ru.izotov.userphonebooks.repositories.UserRepo;
+import ru.izotov.userphonebooks.services.utils.BookEntryUtils;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,29 +22,62 @@ public class PhoneBookService {
     @Autowired
     private PhoneBookRepo bookRepo;
     @Autowired
-    private PhoneNumberRepo numberRepo;
+    private BookEntryRepo entryRepo;
     @Autowired
     private UserRepo userRepo;
 
-    public List<PhoneBook> getAllEntriesForUser(Long user_id) throws UserNotFoundException, NoEntriesFoundException {
-        UserEntity userEntity = userRepo
-                .findById(user_id)
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id %d not found", user_id)));
+    @Autowired
+    private BookEntryUtils numberUtils;
 
-        List<PhoneBookEntity> records =  bookRepo.findByUser_id(user_id);
 
-        if(records.isEmpty()){
-            throw new NoEntriesFoundException(String.format("User %s has no entries in the phone book", userEntity.getUsername()));
+
+    public boolean editEntry(BookEntryEntity editEntry, Long id) throws UserInteractionException {
+        Optional<PhoneBookEntity> book;
+
+        if(!(book = bookRepo.findById(id)).isPresent()){
+            return false;
+        }
+        BookEntryEntity entry = book.get().getEntry();
+        String userName = editEntry.getUserName();
+        if(userName!= null && !userName.isEmpty()){
+            entry.setUserName(userName);
         }
 
-        return records.stream().map(PhoneBook::toModel).collect(Collectors.toList());
+        String phoneNumber = editEntry.getPhoneNumber();
+        if(phoneNumber != null && !phoneNumber.isEmpty()){
+            entry.setPhoneNumber(phoneNumber);
+        }
+
+        bookRepo.save(book.get());
+        return true;
+
     }
 
-    public PhoneBook findById(Long id) throws NoEntriesFoundException {
+    public List<PhoneBook> findByPhoneNumber(String phoneNumber) throws Exception {
+        BookEntryEntity entryEntity = entryRepo
+                .findByPhoneNumber(phoneNumber)
+                .orElseThrow(()-> new UserInteractionException(String.format("Entries with phone number: %s not found", phoneNumber)));
+
+        Map<UserEntity, List<PhoneBookEntity>> map = entryEntity.getBookEntities().stream().collect(Collectors.groupingBy(PhoneBookEntity::getOwner));
+
+        List<PhoneBook> books = new ArrayList<>(map.size());
+        for(List book: map.values()){
+            books.add(PhoneBook.toModel(book));
+        }
+        return books;
+    }
+
+    public PhoneBook findById(Long id) throws Exception {
         return PhoneBook
                 .toModel(bookRepo
                         .findById(id)
-                        .orElseThrow(() -> new NoEntriesFoundException(String.format("No entry with id %s found", id))));
+                        .orElseThrow(() -> new UserInteractionException(String.format("No entry with id %s found", id))));
+    }
+
+    public Long delete(Long entry_id) throws UserInteractionException {
+        bookRepo.findById(entry_id).orElseThrow(()-> new UserInteractionException(String.format("Entry with id %d not found", entry_id)));
+        bookRepo.deleteById(entry_id);
+        return entry_id;
     }
 
 }

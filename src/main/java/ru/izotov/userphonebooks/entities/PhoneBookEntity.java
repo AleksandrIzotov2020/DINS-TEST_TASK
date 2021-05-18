@@ -11,12 +11,12 @@ public class PhoneBookEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @JoinColumn(name = "owner_id")
+    private UserEntity owner;
 
     @ManyToOne
     @JoinColumn(name = "phone_number_id")
-    private PhoneNumberEntity number;
+    private BookEntryEntity entry;
 
     public PhoneBookEntity() {
     }
@@ -29,19 +29,19 @@ public class PhoneBookEntity {
         this.id = id;
     }
 
-    public UserEntity getUser() {
-        return user;
+    public UserEntity getOwner() {
+        return owner;
     }
 
-    public void setUser(UserEntity user) {
-        this.user = user;
+    public void setOwner(UserEntity owner) {
+        this.owner = owner;
     }
 
-    public PhoneNumberEntity getNumber() {
-        return number;
+    public BookEntryEntity getEntry() {
+        return entry;
     }
 
-    public void setNumber(PhoneNumberEntity number) {
-        this.number = number;
+    public void setEntry(BookEntryEntity entry) {
+        this.entry = entry;
     }
 }

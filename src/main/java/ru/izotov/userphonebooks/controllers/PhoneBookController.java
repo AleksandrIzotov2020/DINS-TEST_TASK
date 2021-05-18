@@ -1,55 +1,74 @@
 package ru.izotov.userphonebooks.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.izotov.userphonebooks.exceptions.field.CheckingFieldsException;
-import ru.izotov.userphonebooks.exceptions.phonebook.PhoneBookException;
+import ru.izotov.userphonebooks.entities.BookEntryEntity;
+import ru.izotov.userphonebooks.exceptions.UserInteractionException;
 import ru.izotov.userphonebooks.services.PhoneBookService;
 
 @RestController
-@RequestMapping
+@RequestMapping("/books")
 public class PhoneBookController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhoneBookController.class);
 
     @Autowired
     private PhoneBookService bookService;
 
-    @GetMapping("/books/{id}")
+    @GetMapping
+    public  ResponseEntity findByPhoneNumber(@RequestParam String phoneNumber){
+        try{
+            return ResponseEntity.ok(bookService.findByPhoneNumber(phoneNumber));
+        }catch (UserInteractionException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (Exception e){
+            return getUnexpectedException(e);
+        }
+    }
+
+    @GetMapping("/{id}")
     public ResponseEntity findById(@PathVariable Long id){
         try{
             return ResponseEntity.ok(bookService.findById(id));
-        }catch (PhoneBookException e){
+        }catch (UserInteractionException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(String.format("An error occurred. %s", e.getMessage()));
+            return getUnexpectedException(e);
         }
     }
 
-    @GetMapping("/users/{id}/book")
-    public ResponseEntity getAllRecordsForUser(@PathVariable Long id){
+    @PutMapping("{id}")
+    public ResponseEntity editEntry(@RequestBody BookEntryEntity entry,
+                                    @PathVariable Long id){
         try{
-            return ResponseEntity.ok(bookService.getAllEntriesForUser(id));
-        }catch (CheckingFieldsException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }catch (PhoneBookException e){
+            if(bookService.editEntry(entry,id)){
+                return ResponseEntity.ok("The entry was changed");
+            } return ResponseEntity.badRequest().body(String.format("Entry with id %s not found", id));
+        }catch (UserInteractionException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(String.format("An error occurred. %s", e.getMessage()));
+            return getUnexpectedException(e);
         }
     }
 
 
 
-
-
-
-
-    /*@PutMapping
-    public ResponseEntity editRecord(@RequestParam Long record_id){
+    @DeleteMapping
+    public ResponseEntity deleteEntry(@RequestParam Long id){
         try{
-            return null;
+            return ResponseEntity.ok(String.format("An entry with id %s has been deleted", bookService.delete(id)));
+        }catch (UserInteractionException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(String.format("An error occurred. ", e.getMessage()));
+            return getUnexpectedException(e);
         }
-    }*/
+    }
+
+    private ResponseEntity getUnexpectedException(Throwable throwable){
+        LOGGER.error("An error occurred", throwable);
+        return ResponseEntity.badRequest().body(String.format("An error occurred.\n%s", throwable.getMessage())); // Почитать про этот класс
+    }
 }
