@@ -18,6 +18,17 @@ public class PhoneBookController {
     @Autowired
     private PhoneBookService bookService;
 
+    @GetMapping("/all_users_who_have")
+    public  ResponseEntity findAllUsersWhoHavePhoneNumberAsEntry(@RequestParam String phoneNumber){
+        try{
+            return ResponseEntity.ok(bookService.findAllUsersWhoHavePhoneNumberAsEntry(phoneNumber));
+        }catch (UserInteractionException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (Exception e){
+            return getUnexpectedException(e);
+        }
+    }
+
     @GetMapping
     public  ResponseEntity findByPhoneNumber(@RequestParam String phoneNumber){
         try{
@@ -40,7 +51,7 @@ public class PhoneBookController {
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity editEntry(@RequestBody BookEntryEntity entry,
                                     @PathVariable Long id){
         try{

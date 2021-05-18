@@ -41,6 +41,8 @@ public class PhoneBookService {
         String userName = editEntry.getUserName();
         if(userName!= null && !userName.isEmpty()){
             entry.setUserName(userName);
+            UserEntity userPhone = entry.getUser();
+            if(userPhone!=null)userPhone.setUserName(userName);
         }
 
         String phoneNumber = editEntry.getPhoneNumber();
@@ -53,7 +55,7 @@ public class PhoneBookService {
 
     }
 
-    public List<PhoneBook> findByPhoneNumber(String phoneNumber) throws Exception {
+    public List<PhoneBook> findAllUsersWhoHavePhoneNumberAsEntry(String phoneNumber) throws Exception {
         BookEntryEntity entryEntity = entryRepo
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(()-> new UserInteractionException(String.format("Entries with phone number: %s not found", phoneNumber)));
@@ -65,6 +67,14 @@ public class PhoneBookService {
             books.add(PhoneBook.toModel(book));
         }
         return books;
+    }
+
+    public BookEntry findByPhoneNumber(String phoneNumber) throws Exception {
+        BookEntryEntity entryEntity = entryRepo
+                .findByPhoneNumber(phoneNumber)
+                .orElseThrow(()-> new UserInteractionException(String.format("Entries with phone number: %s not found", phoneNumber)));
+
+        return BookEntry.toModel(entryEntity);
     }
 
     public PhoneBook findById(Long id) throws Exception {

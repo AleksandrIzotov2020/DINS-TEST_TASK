@@ -48,17 +48,28 @@ public class BookEntryService {
     }
 
     public Long delete(Long id, Long entry_id) throws UserInteractionException {
-        UserEntity user = userRepo
-                .findById(id)
-                .orElseThrow(() -> new UserInteractionException(String.format("User with id %d not found", id)));
-        if(user.getBookEntities().stream().noneMatch(b -> b.getId() == entry_id)){
-            throw new UserInteractionException(String.format("Entry with id %d not found", entry_id));
-        }
+        UserEntity user = userUtils.findByIdOrThrows(id);
+
+        PhoneBookEntity entry = user.getBookEntities().stream()
+                .filter(b -> b.getId().equals(entry_id))
+                .findFirst()
+                .orElseThrow(()->new UserInteractionException(String.format("Entry with id %d not found", entry_id)));
+        bookRepo.findById(entry_id);
         bookRepo.deleteById(entry_id);
         return entry_id;
     }
 
 
+    public PhoneBook findBiId(Long user_id, Long entry_id) throws UserInteractionException {
+        UserEntity user = userUtils.findByIdOrThrows(user_id);
+        List<PhoneBookEntity> book = user.getBookEntities();
+        PhoneBookEntity entry = book.stream()
+                .filter(b->b.getId().equals(entry_id))
+                .findFirst()
+                .orElseThrow(()->new UserInteractionException(String.format("User %s does not have an entry with id %s", user.getUserName(), entry_id)));
+        return PhoneBook.toModel(entry);
+
+    }
 
     public PhoneBook findByPhoneNumber(Long user_id, String phoneNumber) throws UserInteractionException {
         UserEntity user = userUtils.findByIdOrThrows(user_id);
@@ -83,6 +94,8 @@ public class BookEntryService {
         Optional<String> userName = Optional.ofNullable(editEntry.getUserName());
         if(userName.isPresent() && !userName.get().isEmpty()){
             bookEntry.getEntry().setUserName(userName.get());
+            UserEntity userPhone = bookEntry.getEntry().getUser();
+            if(userPhone!=null) userPhone.setUserName(userName.get());
         }
 
         Optional<String> phoneNumber = Optional.ofNullable(editEntry.getPhoneNumber());
@@ -94,7 +107,7 @@ public class BookEntryService {
     }
 
     //По возможности переделать
-    public BookEntry createEntry(BookEntryEntity newEntry, Long user_id) throws UserInteractionException {
+    public PhoneBook createEntry(BookEntryEntity newEntry, Long user_id) throws UserInteractionException {
         UserEntity owner = userUtils.findByIdOrThrows(user_id);
         if(!entryUtils.isUserName(newEntry.getUserName()) || !entryUtils.isPhoneNumber(newEntry.getPhoneNumber())){
             throw new UserInteractionException("The new entry contains an invalid username and / or password");
@@ -111,7 +124,7 @@ public class BookEntryService {
         newBookEntry.setOwner(owner);
         newBookEntry.setEntry(newEntry);
         bookRepo.save(newBookEntry);
-        return BookEntry.toModel(newEntry);
+        return PhoneBook.toModel(newBookEntry);
 
 
         /*

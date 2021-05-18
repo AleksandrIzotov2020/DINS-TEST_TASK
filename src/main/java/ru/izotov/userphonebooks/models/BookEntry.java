@@ -14,7 +14,7 @@ public class BookEntry {
 
     public static BookEntry toModel(BookEntryEntity numberEntity){
         BookEntry model = new BookEntry();
-        model.setId(numberEntity.getId());
+        model.setId(-1l);
         model.setUserName(numberEntity.getUserName());
         model.setPhoneNumber(numberEntity.getPhoneNumber());
         return model;

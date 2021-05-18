@@ -47,7 +47,7 @@ public class PhoneBook {
         book.setId(bookEntity.getOwner().getId());
         book.setOwner(bookEntity.getOwner().getUserName());
         BookEntry entry = BookEntry.toModel(bookEntity.getEntry());
-        entry.setId(book.getId());
+        entry.setId(bookEntity.getId());
         book.setEntries(Arrays.asList(entry));
         return book;
     }

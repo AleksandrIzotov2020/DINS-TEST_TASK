@@ -70,12 +70,12 @@ public class UserService {
         }
         UserEntity dbUser = oU.get();
         //Проверки на соответствие имени и пароля
-        if(Optional.ofNullable(dbUser.getUserName())
+        if(Optional.ofNullable(userEntity.getUserName())
                 .orElseThrow(()->new UserInteractionException(String.format("%s - required", "Username")))
                 .isEmpty()
         ){throw new UserInteractionException("Username cannot be empty");}
 
-        if(Optional.ofNullable(dbUser.getPassword())
+        if(Optional.ofNullable(userEntity.getPassword())
                 .orElseThrow(()->new UserInteractionException(String.format("%s - required", "Password")))
                 .length() < 4
         ){throw new UserInteractionException("Password must be more than 4 characters long");}
