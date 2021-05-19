@@ -60,7 +60,7 @@ public class PhoneBookService {
 
     }
 
-    public List<PhoneBook> findByPhoneNumber(String phoneNumber) throws Exception {
+    public List<PhoneBook> findAllUsersWhoHavePhoneNumberAsEntry(String phoneNumber) throws Exception {
         BookEntryEntity entryEntity = entryRepo
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(()-> new UserInteractionException(String.format("Entries with phone number: %s not found", phoneNumber)));

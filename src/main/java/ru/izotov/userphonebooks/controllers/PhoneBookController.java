@@ -21,7 +21,7 @@ public class PhoneBookController {
     @GetMapping
     public  ResponseEntity findByPhoneNumber(@RequestParam String phoneNumber){
         try{
-            return ResponseEntity.ok(bookService.findByPhoneNumber(phoneNumber));
+            return ResponseEntity.ok(bookService.findAllUsersWhoHavePhoneNumberAsEntry(phoneNumber));
         }catch (UserInteractionException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e){

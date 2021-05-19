@@ -56,7 +56,7 @@ public class UserController {
         try {
             if(userService.createUser(user)){
                 return ResponseEntity.ok(String.format("%s successfully saved with id %s", user.getUserName(), user.getId()));
-            } return ResponseEntity.badRequest().body("Something went wrong!");
+            } return ResponseEntity.badRequest().body("This user already exists");
         }catch (UserInteractionException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e){

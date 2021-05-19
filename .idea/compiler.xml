@@ -10,5 +10,8 @@
         <module name="DINS-TEST_TASK-master" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="wrapper" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>

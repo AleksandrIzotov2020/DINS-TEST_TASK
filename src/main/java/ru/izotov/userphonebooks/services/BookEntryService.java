@@ -50,6 +50,17 @@ public class BookEntryService {
         return entry_id;
     }
 
+    public PhoneBook findById(Long id, Long entry_id) throws UserInteractionException {
+        UserEntity user = userUtils.findByIdOrThrows(id);
+
+        return user.getBookEntities().stream()
+                .filter(b -> b.getId() == entry_id)
+                .findFirst()
+                .map(PhoneBook::toModel)
+                .orElseThrow(()->new UserInteractionException(String.format("Entry with id %d not found", entry_id)));
+    }
+
+
 
 
     public PhoneBook findByPhoneNumber(Long user_id, String phoneNumber) throws UserInteractionException {

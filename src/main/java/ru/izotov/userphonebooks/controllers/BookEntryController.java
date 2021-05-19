@@ -30,11 +30,23 @@ public class BookEntryController {
         }
     }
 
+    @GetMapping("/{entry_id}")
+    public ResponseEntity findByPhoneNumber(@PathVariable Long id,
+                                            @PathVariable Long entry_id){
+        try{
+            return ResponseEntity.ok(entryService.findById(id,entry_id));
+        }catch (UserInteractionException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (Exception e){
+            return getUnexpectedException(e);
+        }
+    }
+
     @GetMapping
-    public ResponseEntity findByPhoneNumber(@PathVariable Long user_id,
+    public ResponseEntity findByPhoneNumber(@PathVariable Long id,
                                             @RequestParam String phoneNumber){
         try{
-            return ResponseEntity.ok(entryService.findByPhoneNumber(user_id,phoneNumber));
+            return ResponseEntity.ok(entryService.findByPhoneNumber(id,phoneNumber));
         }catch (UserInteractionException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e){
@@ -56,7 +68,7 @@ public class BookEntryController {
         }
     }
 
-    // Оставить
+
     @PutMapping("/{entry_id}")
     public ResponseEntity editEntry (@RequestBody BookEntryEntity entryEntity,
                                      @PathVariable Long entry_id,
@@ -84,6 +96,6 @@ public class BookEntryController {
 
     private ResponseEntity getUnexpectedException(Throwable throwable){
         LOGGER.error("An error occurred", throwable);
-        return ResponseEntity.badRequest().body(String.format("An error occurred.\n%s", throwable.getMessage())); // Почитать про этот класс
+        return ResponseEntity.badRequest().body(String.format("An error occurred.\n%s", throwable.getMessage()));
     }
 }

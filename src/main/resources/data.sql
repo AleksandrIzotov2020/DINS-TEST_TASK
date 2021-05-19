@@ -9,13 +9,13 @@ INSERT INTO Users (user_name, password) VALUES
   ('Mark Elliot Zuckerberg', '14051984');
 
 INSERT INTO Book_Entry (phone_number, user_name, user_id) VALUES
-  ('+1(932)197-53-55','Stephen Gary Wozniak', 1),
-  ('+1(159)496-55-77','James Gosling', 2),
-  ('+1(996)989-30-09','Vlad Shmunis', 3),
-  ('+1(635)137-96-84','Elon Reeve Musk', 4),
-  ('+1(221)229-74-81','Timothy Donald Cook', 5),
-  ('+1(895)004-43-97','William Henry Gates III', 6),
-  ('+1(069)449-52-98','Mark Elliot Zuckerberg', 7);
+  ('8(932)197-53-55','Stephen Gary Wozniak', 1),
+  ('8(159)496-55-77','James Gosling', 2),
+  ('8(996)989-30-09','Vlad Shmunis', 3),
+  ('8(635)137-96-84','Elon Reeve Musk', 4),
+  ('8(221)229-74-81','Timothy Donald Cook', 5),
+  ('8(895)004-43-97','William Henry Gates III', 6),
+  ('8(069)449-52-98','Mark Elliot Zuckerberg', 7);
 
 INSERT INTO Phone_Book (owner_id, phone_number_id) VALUES
   (1, 2),
