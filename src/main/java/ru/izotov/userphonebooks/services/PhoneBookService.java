@@ -7,13 +7,12 @@ import ru.izotov.userphonebooks.entities.PhoneBookEntity;
 import ru.izotov.userphonebooks.entities.UserEntity;
 import ru.izotov.userphonebooks.exceptions.UserInteractionException;
 import ru.izotov.userphonebooks.models.PhoneBook;
-import ru.izotov.userphonebooks.models.BookEntry;
 import ru.izotov.userphonebooks.repositories.PhoneBookRepo;
 import ru.izotov.userphonebooks.repositories.BookEntryRepo;
 import ru.izotov.userphonebooks.repositories.UserRepo;
-import ru.izotov.userphonebooks.services.utils.BookEntryUtils;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,36 +25,42 @@ public class PhoneBookService {
     @Autowired
     private UserRepo userRepo;
 
-    @Autowired
-    private BookEntryUtils numberUtils;
-
 
 
     public boolean editEntry(BookEntryEntity editEntry, Long id) throws UserInteractionException {
-        Optional<PhoneBookEntity> book;
+        AtomicBoolean result = new AtomicBoolean(false);
+        bookRepo.findById(id).ifPresent(book ->{
+            BookEntryEntity entry = book.getEntry();
+            boolean isPhoneNumber = false;
+            boolean isUserName = false;
 
-        if(!(book = bookRepo.findById(id)).isPresent()){
-            return false;
-        }
-        BookEntryEntity entry = book.get().getEntry();
-        String userName = editEntry.getUserName();
-        if(userName!= null && !userName.isEmpty()){
-            entry.setUserName(userName);
-            UserEntity userPhone = entry.getUser();
-            if(userPhone!=null)userPhone.setUserName(userName);
-        }
+            String userName = editEntry.getUserName();
+            if(userName!= null
+                    && !userName.isEmpty()
+                    && userName.length() < 50){
+                isUserName = true;
+                entry.setUser(null);
+                entry.setUserName(userName);
+            }
 
-        String phoneNumber = editEntry.getPhoneNumber();
-        if(phoneNumber != null && !phoneNumber.isEmpty()){
-            entry.setPhoneNumber(phoneNumber);
-        }
-
-        bookRepo.save(book.get());
-        return true;
+            String phoneNumber = editEntry.getPhoneNumber();
+            if(phoneNumber != null
+                    && !phoneNumber.isEmpty()
+                    && phoneNumber.length() > 6
+                    && phoneNumber.length() < 30){
+                isPhoneNumber = true;
+                entry.setPhoneNumber(phoneNumber);
+            }
+            bookRepo.save(book);
+            if(isPhoneNumber || isUserName){
+                result.set(true);
+            }
+        });
+        return result.get();
 
     }
 
-    public List<PhoneBook> findAllUsersWhoHavePhoneNumberAsEntry(String phoneNumber) throws Exception {
+    public List<PhoneBook> findByPhoneNumber(String phoneNumber) throws Exception {
         BookEntryEntity entryEntity = entryRepo
                 .findByPhoneNumber(phoneNumber)
                 .orElseThrow(()-> new UserInteractionException(String.format("Entries with phone number: %s not found", phoneNumber)));
@@ -67,14 +72,6 @@ public class PhoneBookService {
             books.add(PhoneBook.toModel(book));
         }
         return books;
-    }
-
-    public BookEntry findByPhoneNumber(String phoneNumber) throws Exception {
-        BookEntryEntity entryEntity = entryRepo
-                .findByPhoneNumber(phoneNumber)
-                .orElseThrow(()-> new UserInteractionException(String.format("Entries with phone number: %s not found", phoneNumber)));
-
-        return BookEntry.toModel(entryEntity);
     }
 
     public PhoneBook findById(Long id) throws Exception {

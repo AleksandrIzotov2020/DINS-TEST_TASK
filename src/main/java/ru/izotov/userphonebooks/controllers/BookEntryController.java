@@ -30,23 +30,11 @@ public class BookEntryController {
         }
     }
 
-    @GetMapping("/{entry_id}")
-    public ResponseEntity findById(@PathVariable Long entry_id,
-                                   @PathVariable Long id){
-        try{
-            return ResponseEntity.ok(entryService.findBiId(id, entry_id));
-        }catch (UserInteractionException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }catch (Exception e){
-            return getUnexpectedException(e);
-        }
-    }
-
     @GetMapping
-    public ResponseEntity findByPhoneNumber(@PathVariable Long id,
+    public ResponseEntity findByPhoneNumber(@PathVariable Long user_id,
                                             @RequestParam String phoneNumber){
         try{
-            return ResponseEntity.ok(entryService.findByPhoneNumber(id,phoneNumber));
+            return ResponseEntity.ok(entryService.findByPhoneNumber(user_id,phoneNumber));
         }catch (UserInteractionException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e){
@@ -68,7 +56,7 @@ public class BookEntryController {
         }
     }
 
-
+    // Оставить
     @PutMapping("/{entry_id}")
     public ResponseEntity editEntry (@RequestBody BookEntryEntity entryEntity,
                                      @PathVariable Long entry_id,

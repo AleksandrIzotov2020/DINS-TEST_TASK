@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PhoneBookRepo extends CrudRepository<PhoneBookEntity, Long> {
-    List<PhoneBookEntity> findByOwner_id(Long owner_id);
+    //List<PhoneBookEntity> findByOwner_id(Long owner_id);
 }

@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class UserPhoneBooksApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(UserPhoneBooksApplication.class, args); //Прочитать про класс SpringApplication
+        SpringApplication.run(UserPhoneBooksApplication.class, args);
     }
 
 }

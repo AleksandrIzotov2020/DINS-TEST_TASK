@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface BookEntryRepo extends CrudRepository<BookEntryEntity, Long> {
     Optional<BookEntryEntity> findByPhoneNumber(String phoneNumber);
+    Optional<BookEntryEntity> findByUserName(String userName);
 }

@@ -36,7 +36,7 @@ public class UserController {
    @GetMapping
     public ResponseEntity getUserByName(@RequestParam String username){
        try {
-           return ResponseEntity.ok(userService.containsUsername(username));
+           return ResponseEntity.ok(userService.containsUserName(username));
        }catch (Exception e){
            return getUnexpectedException(e);
        }
